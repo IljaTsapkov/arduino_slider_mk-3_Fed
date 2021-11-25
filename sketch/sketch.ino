@@ -1,5 +1,6 @@
 // lcd дисплей
-#include <LiquidCrystal.h>
+#include <LiquidCrystal_I2C.h>
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 // мембранныя клавиатура
 #include <Keypad.h>
 // модуль управления шаговым мотором
@@ -20,10 +21,6 @@
 
 // Create a new instance of the MD_Parola class with hardware SPI connection:
 MD_Parola myDisplay = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
-
-// lcd connection
-const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
-LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 // Keypad
 const byte ROWS = 4; // Количество рядов
@@ -72,19 +69,13 @@ void setup()
 {
   String state = "task3";
   if (state == "task3")
-    setup_3();
+    setup_3(666, napravlenije);
 }
 
-void setup_3()
+void setup_3(int speed, byte napravlenije)
 {
-  myStepper.setSpeed(60);
+  myStepper.setSpeed(speed);
   Serial.begin(9600); // Открываем последовательную связь на скорости 9600
-
-  // lcd code
-  lcd.begin(16, 2);
-  lcd.print("Task 3");
-  lcd.setCursor(0, 1);
-  lcd.print("Ping-pong");
 
   myDisplay.begin();
   myDisplay.setIntensity(0);
@@ -100,11 +91,11 @@ int get_distance(char lr)
   unsigned int uS = sonarR.ping_cm();
   if (lr == 'r')
   {
-    return unsigned int uS = sonarR.ping_cm();
+    return uS = sonarR.ping_cm();
   }
   else if (lr == 'l')
   {
-    return unsigned int uS = sonarL.ping_cm();
+    return uS = sonarL.ping_cm();
   }
 
   // unsigned int uS = sonarR.ping_cm();
@@ -123,23 +114,68 @@ void print_distance()
   Serial.println(dr);
 }
 
-
-void ja_hz_prosto_motori()
+void motor_control(byte lr)
 {
-  // step one revolution in one direction:
-  Serial.println("clockwise");
-  myStepper.step(stepsPerRevolution);
-  delay(500);
-
-  // step one revolution in the other direction:
-  Serial.println("counterclockwise");
-  myStepper.step(-stepsPerRevolution);
-  delay(500);
+  if (lr == 1) // to left
+  {
+    Serial.println("clockwise");
+    myStepper.step(stepsPerRevolution);
+  }
+  else if (lr == 2) //to right
+  {
+    Serial.println("counterclockwise");
+    myStepper.step(-stepsPerRevolution);
+  }
 }
+
+void print_lcd(string str, byte row)
+{
+  // lcd code
+  if (row == 1)
+  {
+    lcd.init();
+    lcd.backlight(); // Включаем подсветку дисплея
+    lcd.print(str);
+  }
+  else if (row == 2)
+  {
+    lcd.setCursor(8, 1);
+    lcd.print(str);
+  }
+}
+
+void opredelenie_napravlenija_dvizenija_motora()
+{
+
+  if (sonarL.ping_cm(); <= 10)  //  если левый датчик видит препятсвиее, то мы крутим вправо
+  {
+    while (true)
+    {
+      motor_control(2);
+      if (sonarR.ping_cm(); <= 10)
+        return;
+    }
+  }
+  if (sonarR.ping_cm(); <= 10)  //  аналогично
+  {
+    while (true)
+    {
+      motor_control(1);
+      if (sonarL.ping_cm(); <= 10)
+        return;
+    }
+  }
+}
+
+// void red_alert_3()
+// {
+//   if ()
+// }
 
 void loop()
 {
   print_distance();
-  ja_hz_prosto_motori();
+  // red_alert_3();
+  print_lcd("Task 3", 1);
+  print_lcd("Ping-Pong", 2);
 }
-
