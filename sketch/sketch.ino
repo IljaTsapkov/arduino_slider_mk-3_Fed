@@ -60,7 +60,7 @@ NewPing sonarL(TRIGGER_PIN_L, ECHO_PIN_L, MAX_DISTANCE_L);
 #include <Stepper.h>
 
 // Number of steps per output rotation
-const int stepsPerRevolution = 3000;
+const int stepsPerRevolution = 300;
 
 // Create Instance of Stepper library
 Stepper myStepper(stepsPerRevolution, 4, 5, 6, 7);
@@ -69,7 +69,7 @@ void setup()
 {
   String state = "task3";
   if (state == "task3")
-    setup_3(60, 2);
+    setup_3(100, 2);
 }
 
 void setup_3(int speed, byte napravlenije)
@@ -86,6 +86,9 @@ void setup_3(int speed, byte napravlenije)
 
   receiver.enableIRIn();  // enable the receiver
   receiver.blink13(true); // enable blinking of the built-in LED when an IR signal is received
+
+  print_lcd("Task 3            ", 1);
+  print_lcd("Ping-Pong         ", 2);
 }
 
 int get_distance(char lr)
@@ -121,12 +124,12 @@ void motor_control(byte lr)
 {
   if (lr == 1) // to left
   {
-    Serial.println("clockwise");
+    Serial.println("to_left");
     myStepper.step(stepsPerRevolution);
   }
   else if (lr == 2) //to right
   {
-    Serial.println("counterclockwise");
+    Serial.println("to_right");
     myStepper.step(-stepsPerRevolution);
   }
 }
@@ -145,37 +148,54 @@ void print_lcd(String str, byte row)
     lcd.print(str);
   }
 }
-int counter = 0;
+
+int counterR = 0;
+int counterL = 0;
 
 void opredelenie_napravlenija_dvizenija_motora()
 {
-  if (sonarL.ping_cm() <= 10) //  если левый датчик видит препятсвиее, то мы крутим вправо
+  //  движение вправо
+  if (counterR >= 4)
   {
-    counter++;
-    while (counter >= 4)
-    {
-      motor_control(2);
-      if (sonarR.ping_cm() <= 10)
-      {
-        counter = 0;
-        return;
-      }
-    }
+    motor_control(2);
   }
-  if (sonarR.ping_cm() <= 10) //  аналогично
+  //  движение влево
+  else if (counterL >= 4)
   {
-    counter++;
-    while (counter >= 4)
-    {
-      motor_control(1);
-      if (sonarL.ping_cm() <= 10)
-      {
-        counter = 0;
-        return;
-      }
-    }
-  }
+    motor_control(1);
+  } 
+
+  // if (sonarL.ping_cm() <= 10) //  если левый датчик видит препятсвиее, то мы крутим вправо
+  // {
+  //   counter++;
+  //   while (counter >= 3)
+  //   {
+  //     motor_control(2);
+  //     if (sonarR.ping_cm() <= 10)
+  //     {
+  //       counter = 0;
+  //       return;
+  //     }
+  //   }
+  // }
+  // if (sonarR.ping_cm() <= 10) //  аналогично
+  // {
+  //   counter++;
+  //   while (counter >= 3)
+  //   {
+  //     motor_control(1);
+  //     if (sonarL.ping_cm() <= 10)
+  //     {
+  //       counter = 0;
+  //       return;
+  //     }
+  //   }
+  // }
 }
+
+// print_lcd("counter             ", 1);
+// print_lcd("                    ", 2);
+// print_lcd(String(counter), 2);
 
 // void red_alert_3()
 // {
@@ -193,7 +213,4 @@ void loop()
   print_distance();
   // red_alert_3();
   opredelenie_napravlenija_dvizenija_motora();
-
-  print_lcd("Task 3            ", 1);
-  print_lcd("Ping-Pong         ", 2);
 }
