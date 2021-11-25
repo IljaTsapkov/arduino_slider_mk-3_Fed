@@ -60,7 +60,7 @@ NewPing sonarL(TRIGGER_PIN_L, ECHO_PIN_L, MAX_DISTANCE_L);
 #include <Stepper.h>
 
 // Number of steps per output rotation
-const int stepsPerRevolution = 200;
+const int stepsPerRevolution = 3000;
 
 // Create Instance of Stepper library
 Stepper myStepper(stepsPerRevolution, 4, 5, 6, 7);
@@ -69,11 +69,14 @@ void setup()
 {
   String state = "task3";
   if (state == "task3")
-    setup_3(666, napravlenije);
+    setup_3(60, 2);
 }
 
 void setup_3(int speed, byte napravlenije)
 {
+
+  lcd.init();
+  //lcd.backlight(); // Включаем подсветку дисплея
   myStepper.setSpeed(speed);
   Serial.begin(9600); // Открываем последовательную связь на скорости 9600
 
@@ -128,49 +131,61 @@ void motor_control(byte lr)
   }
 }
 
-void print_lcd(string str, byte row)
+void print_lcd(String str, byte row)
 {
   // lcd code
   if (row == 1)
   {
-    lcd.init();
-    lcd.backlight(); // Включаем подсветку дисплея
+    lcd.setCursor(0, 0);
     lcd.print(str);
   }
   else if (row == 2)
   {
-    lcd.setCursor(8, 1);
+    lcd.setCursor(0, 1);
     lcd.print(str);
   }
 }
-
-
+int counter = 0;
 
 void opredelenie_napravlenija_dvizenija_motora()
 {
-  if (sonarL.ping_cm(); <= 10)  //  если левый датчик видит препятсвиее, то мы крутим вправо
+  if (sonarL.ping_cm() <= 10) //  если левый датчик видит препятсвиее, то мы крутим вправо
   {
-    while (true)
+    counter++;
+    while (counter >= 4)
     {
       motor_control(2);
-      if (sonarR.ping_cm(); <= 10)
+      if (sonarR.ping_cm() <= 10)
+      {
+        counter = 0;
         return;
+      }
     }
   }
-  if (sonarR.ping_cm(); <= 10)  //  аналогично
+  if (sonarR.ping_cm() <= 10) //  аналогично
   {
-    while (true)
+    counter++;
+    while (counter >= 4)
     {
       motor_control(1);
-      if (sonarL.ping_cm(); <= 10)
+      if (sonarL.ping_cm() <= 10)
+      {
+        counter = 0;
         return;
+      }
     }
   }
 }
 
 // void red_alert_3()
 // {
-//   if ()
+//
+// }
+// void test_na_muhu()
+// {
+//   if (sonarR.ping_cm() >= 10)
+//   {
+//   }
 // }
 
 void loop()
@@ -178,6 +193,7 @@ void loop()
   print_distance();
   // red_alert_3();
   opredelenie_napravlenija_dvizenija_motora();
-  print_lcd("Task 3", 1);
-  print_lcd("Ping-Pong", 2);
+
+  print_lcd("Task 3            ", 1);
+  print_lcd("Ping-Pong         ", 2);
 }
