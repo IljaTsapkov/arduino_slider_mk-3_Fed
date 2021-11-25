@@ -144,9 +144,10 @@ void print_lcd(string str, byte row)
   }
 }
 
+
+
 void opredelenie_napravlenija_dvizenija_motora()
 {
-
   if (sonarL.ping_cm(); <= 10)  //  если левый датчик видит препятсвиее, то мы крутим вправо
   {
     while (true)
@@ -176,6 +177,7 @@ void loop()
 {
   print_distance();
   // red_alert_3();
+  opredelenie_napravlenija_dvizenija_motora();
   print_lcd("Task 3", 1);
   print_lcd("Ping-Pong", 2);
 }
