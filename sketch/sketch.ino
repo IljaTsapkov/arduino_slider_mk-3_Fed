@@ -49,21 +49,24 @@ unsigned long key_value = 0;   // variable to store the pressed key value
 #define ECHO_PIN_L 45
 #define MAX_DISTANCE_L 200
 
-#define TRIGGER_PIN_R 43
-#define ECHO_PIN_R 45
+#define TRIGGER_PIN_R 39
+#define ECHO_PIN_R 41
 #define MAX_DISTANCE_R 200
 
-NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
+NewPing sonarR(TRIGGER_PIN_R, ECHO_PIN_R, MAX_DISTANCE_R);
+NewPing sonarL(TRIGGER_PIN_L, ECHO_PIN_L, MAX_DISTANCE_L);
 // настройка объекта NewPing: контакты и максимальная дистанция
 
-// левые датчики
-// const int trigPinL = 43;
-// const int echoPinL = 45;
-// правые датчики
-// const int trigPinR = 39;
-// const int echoPinR = 41;
-
 #define RECEIVER_PIN 47 // define the IR receiver pin
+
+// подключение мотора
+#include <Stepper.h>
+
+// Number of steps per output rotation
+const int stepsPerRevolution = 200;
+
+// Create Instance of Stepper library
+Stepper myStepper(stepsPerRevolution, 4, 5, 6, 7);
 
 void setup()
 {
@@ -74,6 +77,7 @@ void setup()
 
 void setup_3()
 {
+  myStepper.setSpeed(60);
   Serial.begin(9600); // Открываем последовательную связь на скорости 9600
 
   // lcd code
@@ -88,37 +92,54 @@ void setup_3()
 
   receiver.enableIRIn();  // enable the receiver
   receiver.blink13(true); // enable blinking of the built-in LED when an IR signal is received
-
-  pinMode(trigPinL, OUTPUT);
-  pinMode(echoPinL, INPUT);
-
-  pinMode(trigPinR, OUTPUT);
-  pinMode(echoPinR, INPUT);
 }
 
-int getDistance()
+int get_distance(char lr)
 {
   delay(50);
-  unsigned int uS = sonar.ping_cm();
-  Serial.print(uS);
-  Serial.println("cm"); //  "сантиметров"
-  return uS;
+  unsigned int uS = sonarR.ping_cm();
+  if (lr == 'r')
+  {
+    return unsigned int uS = sonarR.ping_cm();
+  }
+  else if (lr == 'l')
+  {
+    return unsigned int uS = sonarL.ping_cm();
+  }
+
+  // unsigned int uS = sonarR.ping_cm();
+  // Serial.print(uS);
+  // Serial.println("cm"); //  "сантиметров"
+  return 0;
 }
 
-MoveToCenter()
+void print_distance()
 {
-  do
-  {
-    int distanceLeft = getDistance();
-    Serial.println(distanceL);
-    int distanceRight = getDistance();
-    Serial.println(distanceR);
-  } while (edge_to_edge_move());
+  int dl = get_distance('l');
+  Serial.print("Left distance\t");
+  Serial.println(dl);
+  int dr = get_distance('r');
+  Serial.print("Right distance\t");
+  Serial.println(dr);
+}
+
+
+void ja_hz_prosto_motori()
+{
+  // step one revolution in one direction:
+  Serial.println("clockwise");
+  myStepper.step(stepsPerRevolution);
+  delay(500);
+
+  // step one revolution in the other direction:
+  Serial.println("counterclockwise");
+  myStepper.step(-stepsPerRevolution);
+  delay(500);
 }
 
 void loop()
 {
-  // put your main code here, to run repeatedly:
-  double speed double position
-      string direction
+  print_distance();
+  ja_hz_prosto_motori();
 }
+
